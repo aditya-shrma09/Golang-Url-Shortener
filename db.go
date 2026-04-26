@@ -23,7 +23,7 @@ func InitDB() {
 	var err error
 	DB, err = sql.Open("postgres", connstr)
 	if err != nil {
-		log.Fatal(err)
+		//log.Fatal(err)
 	}
 
 	err = DB.Ping()
@@ -31,7 +31,7 @@ func InitDB() {
 		log.Fatal(err)
 	}
 
-	log.Println(" DB connected")
+	//log.Println(" DB connected")
 
 	createTable()
 }

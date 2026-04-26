@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"log"
@@ -40,11 +40,9 @@ type Url struct {
 
 // HASHING
 func Gen_Url(ourl string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(ourl))
-	data := hasher.Sum(nil)
-	h := hex.EncodeToString(data)
-	return h[:8]
+	bytes := make([]byte, 4) // 4 bytes = 8 hex chars
+	rand.Read(bytes)
+	return hex.EncodeToString(bytes)
 }
 
 // validate URL is non-empty and well-formed
@@ -95,7 +93,7 @@ func Get_url(id string) (Url, error) {
 
 // SERVER
 func handler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("URL Shortener API Running 🚀"))
+	w.Write([]byte("URL Shortener API Running "))
 	BaseURL := getEnv("BASE_URL", "http://localhost:3000")
 	start := time.Now()
 	defer func() {
@@ -126,7 +124,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	//  Create_url now returns the full short URL
 	shurl, err := Create_url(data.URL, BaseURL)
 	if err != nil {
-		log.Println("Create_url error:", err)
+		//log.Println("Create_url error:", err)
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}
@@ -154,7 +152,7 @@ func redirect(w http.ResponseWriter, r *http.Request) {
 	url, err := getcachedUrl(id)
 	log.Println("redis:", time.Since(start))
 	if err == nil {
-		log.Println("CACHE HIT")
+		//log.Println("CACHE HIT")
 		http.Redirect(w, r, url, http.StatusFound)
 		return
 	}
@@ -168,21 +166,6 @@ func redirect(w http.ResponseWriter, r *http.Request) {
 
 	_ = cacheURL(id, u.OURL)
 	http.Redirect(w, r, u.OURL, http.StatusFound)
-}
-
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusNoContent) // explicitly return 204
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
 }
 
 func main() {
@@ -207,7 +190,7 @@ func main() {
 
 	log.Println("Server running on", baseURL)
 
-	err := http.ListenAndServe(":"+port, corsMiddleware(mux))
+	err := http.ListenAndServe(":"+port, mux)
 	if err != nil {
 		log.Fatal(err)
 	}

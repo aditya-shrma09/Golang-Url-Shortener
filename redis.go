@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -46,11 +45,4 @@ func getcachedUrl(id string) (string, error) {
 		return "", fmt.Errorf("redis error: %w", err)
 	}
 	return url, nil
-}
-
-// RATE LIMITER
-func RateLimiting(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-	})
 }
