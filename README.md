@@ -28,3 +28,23 @@ Go API Server
       ├── Redis (Cache Hit → Instant Redirect)
       │
       └── PostgreSQL (Cache Miss → DB Lookup → Cache Populate)
+# Performance & Load Testing
+Load tested using hey.
+
+Important Debugging Insight
+
+Initial benchmarks were misleading because hey followed HTTP 302 redirects, causing requests to hit external domains and trigger rate limiting.
+
+Correct benchmarking performed using:
+-  hey -c 200 -z 30s -disable-redirects http://localhost:3000/r/<shortCode>
+
+# Benchmark Results
+Metric	      Result
+Requests/sec	~10,600 RPS
+Total Requests	319K+
+Concurrency	      200 users
+Duration	      30 seconds
+p99 Latency	      51ms
+Failures	      0
+
+High throughput achieved primarily via Redis cache-hit serving.
